@@ -167,3 +167,36 @@
     }
   });
 })();
+
+
+/* ============================================================
+   Фикс лайтбокса: подгон размера окна под пропорции эскиза
+   ============================================================ */
+(function () {
+  'use strict';
+  var lbImg = document.getElementById('lb-img');
+  var lbBox = document.getElementById('lightbox');
+  if (!lbImg || !lbBox) return;
+
+  function fitLB() {
+    var bg = lbImg.style.backgroundImage;
+    if (!bg || bg === 'none') { lbImg.style.width = ''; lbImg.style.height = ''; return; }
+    var m = bg.match(/url\(["']?([^"')]+)["']?\)/);
+    if (!m) return;
+    var probe = new Image();
+    probe.onload = function () {
+      if (lbImg.style.backgroundImage !== bg) return;
+      var maxW = Math.min(960, window.innerWidth * 0.94);
+      var maxH = window.innerHeight * 0.74;
+      var k = Math.min(maxW / probe.naturalWidth, maxH / probe.naturalHeight);
+      lbImg.style.width = Math.round(probe.naturalWidth * k) + 'px';
+      lbImg.style.height = Math.round(probe.naturalHeight * k) + 'px';
+    };
+    probe.src = m[1];
+  }
+
+  new MutationObserver(fitLB).observe(lbImg, { attributes: true, attributeFilter: ['style'] });
+  window.addEventListener('resize', function () {
+    if (!lbBox.hidden) fitLB();
+  });
+})();
