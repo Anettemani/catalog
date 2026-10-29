@@ -590,6 +590,42 @@ img { -webkit-user-drag: none; pointer-events: none; }
 }
 .lb-close:hover { color: var(--pink); }
 
+/* стрелки листания в лайтбоксе */
+.lb-nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 210;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 1px solid rgba(239, 230, 230, 0.35);
+  background: rgba(20, 16, 16, 0.45);
+  color: #EFE6E6;
+  font-family: var(--serif);
+  font-size: 34px;
+  line-height: 1;
+  padding-bottom: 4px;
+  cursor: pointer;
+  transition: background 0.25s, color 0.25s, border-color 0.25s;
+}
+.lb-nav:hover {
+  background: var(--pink-deep);
+  border-color: var(--pink-deep);
+  color: #fff;
+}
+.lb-prev { left: 18px; }
+.lb-next { right: 18px; }
+
+/* счётчик «12 / 32» в лайтбоксе */
+.lb-counter {
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #C9BABA;
+  margin-top: -6px;
+}
+
 .lb-body {
   max-width: min(960px, 94vw);
   width: 100%;
@@ -648,6 +684,46 @@ img { -webkit-user-drag: none; pointer-events: none; }
   text-align: center;
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ---------- Кнопка «наверх» ---------- */
+.to-top {
+  position: fixed;
+  right: 22px;
+  bottom: 22px;
+  z-index: 90;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  border: 1px solid var(--pink);
+  background: rgba(255, 255, 255, 0.94);
+  color: var(--pink-deep);
+  font-size: 20px;
+  line-height: 1;
+  padding-bottom: 2px;
+  cursor: pointer;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(10px);
+  transition: opacity 0.3s, transform 0.3s, background 0.25s, color 0.25s;
+}
+.to-top.show {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+.to-top:hover {
+  background: var(--pink-deep);
+  border-color: var(--pink-deep);
+  color: #fff;
+}
+
+@media (max-width: 760px) {
+  .to-top { right: 14px; bottom: 14px; width: 40px; height: 40px; font-size: 17px; }
+  .lb-nav { width: 42px; height: 42px; font-size: 28px; }
+  .lb-prev { left: 8px; }
+  .lb-next { right: 8px; }
+}
 
 /* ---------- Появление карточек ---------- */
 .item { opacity: 0; transform: translateY(14px); }

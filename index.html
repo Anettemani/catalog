@@ -5,6 +5,22 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Anette Mani — коллекция эскизов пластин для стемпинга</title>
 <meta name="description" content="Коллекция дизайнов для создания идеального маникюра. Авторские эскизы пластин для стемпинга от Anette Mani: MY NAILS, AM, XMQ. Ссылки на пластины на AliExpress.">
+<meta name="theme-color" content="#FFFFFF">
+<link rel="canonical" href="https://anettemani.github.io/catalog/">
+<!-- Open Graph: превью при отправке ссылки в Telegram, WhatsApp, VK -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Anette Mani">
+<meta property="og:locale" content="ru_RU">
+<meta property="og:title" content="Anette Mani — коллекция эскизов пластин для стемпинга">
+<meta property="og:description" content="Три коллекции авторских эскизов: MY NAILS, AM, XMQ. Ссылки на пластины на AliExpress.">
+<meta property="og:url" content="https://anettemani.github.io/catalog/">
+<meta property="og:image" content="https://anettemani.github.io/catalog/assets/img/og-cover.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Anette Mani — коллекция эскизов пластин для стемпинга">
+<meta name="twitter:description" content="Три коллекции авторских эскизов: MY NAILS, AM, XMQ. Ссылки на пластины на AliExpress.">
+<meta name="twitter:image" content="https://anettemani.github.io/catalog/assets/img/og-cover.jpg">
 <link rel="icon" type="image/png" href="assets/img/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -39,7 +55,7 @@
     <h1>Добро пожаловать!</h1>
     <div class="hero-divider"></div>
     <p class="hero-sub">Привет! Я — Anette, и здесь собрана вся моя коллекция эскизов пластин для стемпинга</p>
-    <div class="hero-img-wrap"><img src="assets/img/hero.png" alt=""></div>
+    <div class="hero-img-wrap"><img src="assets/img/hero.webp" alt=""></div>
     <a href="#collections" class="scroll-hint" aria-label="Прокрутить к коллекциям">&#8595;</a>
   </section>
 
@@ -55,7 +71,7 @@
         <p class="cc-label">Коллекция</p>
         <h3>MY NAILS</h3>
         <p>Смелые и современные решения, адаптированные из открытых визуальных источников.</p>
-        <span class="cc-count">26 дизайнов</span>
+        <span class="cc-count" data-collection-count="mynails">26 дизайнов</span>
         <span class="cc-link">Смотреть каталог</span>
       </a>
       <a class="card-collection" href="autosketch.html">
@@ -63,7 +79,7 @@
         <p class="cc-label">Коллекция</p>
         <h3>Авторские эскизы</h3>
         <p>Эксклюзивные авторские работы Anette Mani. Искусство в каждом штрихе для неповторимых образов.</p>
-        <span class="cc-count">6 дизайнов</span>
+        <span class="cc-count" data-collection-count="autosketch">6 дизайнов</span>
         <span class="cc-link">Смотреть каталог</span>
       </a>
       <a class="card-collection" href="xmq.html">
@@ -71,7 +87,7 @@
         <p class="cc-label">Коллекция</p>
         <h3>XMQ</h3>
         <p>Смелые и современные решения для тех, кто не боится экспериментировать.</p>
-        <span class="cc-count">32 дизайна</span>
+        <span class="cc-count" data-collection-count="xmq">32 дизайна</span>
         <span class="cc-link">Смотреть каталог</span>
       </a>
     </div>
@@ -86,7 +102,7 @@
         <p>Проектирование эскизов — от создания идеи и изображений до подготовки макетов к производству.</p>
         <p class="motto">Качество. Стиль. Вдохновение.</p>
       </div>
-      <div class="about-visual"><img src="assets/img/hero.png" alt=""></div>
+      <div class="about-visual"><img src="assets/img/hero.webp" alt=""></div>
     </div>
   </section>
 
@@ -118,24 +134,8 @@
   <p class="copyright">&copy; 2026 by @anette_mani. Все права защищены</p>
 </footer>
 
+<script src="assets/js/data.js"></script>
 <script src="assets/js/protect.js"></script>
-<script>
-  // мобильное меню
-  (function () {
-    var burger = document.getElementById('burger');
-    var nav = document.querySelector('.main-nav');
-    burger.addEventListener('click', function () {
-      var open = nav.classList.toggle('open');
-      burger.classList.toggle('open', open);
-      burger.setAttribute('aria-expanded', open ? 'true' : 'false');
-    });
-    nav.addEventListener('click', function (e) {
-      if (e.target.tagName === 'A') {
-        nav.classList.remove('open');
-        burger.classList.remove('open');
-      }
-    });
-  })();
-</script>
+<script src="assets/js/site.js"></script>
 </body>
 </html>

@@ -11,6 +11,7 @@
   if (!colKey || typeof CATALOG === 'undefined' || !CATALOG[colKey]) return;
 
   var col = CATALOG[colKey];
+  var visibleItems = []; // текущий отфильтрованный список (для лайтбокса)
   var grid = document.getElementById('grid');
   var qInput = document.getElementById('q');
   var sortSel = document.getElementById('sort');
@@ -58,6 +59,7 @@
     emptyNote.hidden = items.length !== 0;
     countNote.textContent = 'Показано ' + items.length + ' из ' + col.items.length + ' дизайнов';
 
+    visibleItems = items; // запоминаем для листания в лайтбоксе
     observeImages();
   }
 
@@ -95,13 +97,29 @@
   var lbImg = document.getElementById('lb-img');
   var lbTitle = document.getElementById('lb-title');
   var lbAli = document.getElementById('lb-ali');
+  var lbCounter = document.getElementById('lb-counter');
+  var lbPrev = document.getElementById('lb-prev');
+  var lbNext = document.getElementById('lb-next');
+  var lbIndex = 0; // позиция открытого эскиза внутри visibleItems
 
-  function openLB(item) {
+  function showAt(idx) {
+    if (!visibleItems.length) return;
+    lbIndex = (idx + visibleItems.length) % visibleItems.length; // зацикливание
+    var item = visibleItems[lbIndex];
     lbImg.style.backgroundImage = 'url("' + IMG_DIR + item.img + '")';
     lbTitle.textContent = item.t;
     lbAli.setAttribute('href', item.ali);
+    if (lbCounter) lbCounter.textContent = (lbIndex + 1) + ' / ' + visibleItems.length;
     lightbox.hidden = false;
     document.body.style.overflow = 'hidden';
+  }
+
+  function openLB(item) {
+    var idx = -1;
+    for (var i = 0; i < visibleItems.length; i++) {
+      if (visibleItems[i].n === item.n) { idx = i; break; }
+    }
+    showAt(idx === -1 ? 0 : idx);
   }
 
   function closeLB() {
@@ -130,9 +148,34 @@
   lightbox.addEventListener('click', function (e) {
     if (e.target === lightbox) closeLB();
   });
+
+  // стрелки-кнопки в лайтбоксе
+  if (lbPrev) lbPrev.addEventListener('click', function () { showAt(lbIndex - 1); });
+  if (lbNext) lbNext.addEventListener('click', function () { showAt(lbIndex + 1); });
+
   document.addEventListener('keydown', function (e) {
-    if (e.key === 'Escape' && !lightbox.hidden) closeLB();
+    if (lightbox.hidden) return;
+    if (e.key === 'Escape') closeLB();
+    if (e.key === 'ArrowLeft') showAt(lbIndex - 1);
+    if (e.key === 'ArrowRight') showAt(lbIndex + 1);
   });
+
+  // свайпы на сенсорных экранах
+  var touchX = null, touchY = null;
+  lightbox.addEventListener('touchstart', function (e) {
+    if (e.touches.length !== 1) return;
+    touchX = e.touches[0].clientX;
+    touchY = e.touches[0].clientY;
+  }, { passive: true });
+  lightbox.addEventListener('touchend', function (e) {
+    if (touchX === null || e.changedTouches.length !== 1) return;
+    var dx = e.changedTouches[0].clientX - touchX;
+    var dy = e.changedTouches[0].clientY - touchY;
+    touchX = touchY = null;
+    if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.4) {
+      if (dx < 0) showAt(lbIndex + 1); else showAt(lbIndex - 1);
+    }
+  }, { passive: true });
 
   /* ---------- События панели управления ---------- */
 
@@ -147,26 +190,8 @@
 })();
 
 /* ============================================================
-   Мобильное меню (для страниц каталога)
+   Мобильное меню и кнопка «наверх» — в общем файле site.js
    ============================================================ */
-
-(function () {
-  'use strict';
-  var burger = document.getElementById('burger');
-  var nav = document.querySelector('.main-nav');
-  if (!burger || !nav) return;
-  burger.addEventListener('click', function () {
-    var open = nav.classList.toggle('open');
-    burger.classList.toggle('open', open);
-    burger.setAttribute('aria-expanded', open ? 'true' : 'false');
-  });
-  nav.addEventListener('click', function (e) {
-    if (e.target.tagName === 'A') {
-      nav.classList.remove('open');
-      burger.classList.remove('open');
-    }
-  });
-})();
 
 
 /* ============================================================
