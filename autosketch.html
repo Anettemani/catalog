@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Авторские эскизы | Anette Mani</title>
+<meta name="description" content="Эксклюзивные авторские работы Anette Mani. Искусство в каждом штрихе для неповторимых образов.">
+<link rel="icon" type="image/png" href="assets/img/favicon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body data-collection="autosketch">
+<div class="top-note">Все эскизы защищены авторским правом &copy; @anette_mani</div>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="index.html" class="brand" aria-label="Anette Mani — на главную">
+      <img src="assets/img/logo.png" alt="" class="brand-mark">
+      <span class="brand-name">Anette&nbsp;Mani</span>
+    </a>
+    <nav class="main-nav" aria-label="Основное меню">
+      <a href="index.html">Главная</a>
+      <a href="mynails.html">MY NAILS</a>
+      <a href="autosketch.html" class="active">Авторские эскизы</a>
+      <a href="xmq.html">XMQ</a>
+    </nav>
+    <button class="burger" id="burger" aria-label="Открыть меню" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>
+
+<main>
+  <section class="catalog-head">
+    <p class="eyebrow">AM · Коллекция</p>
+    <h1>Авторские эскизы</h1>
+    <p class="collection-desc">Эксклюзивные авторские работы Anette Mani. Искусство в каждом штрихе для неповторимых образов.</p>
+
+    <div class="catalog-toolbar">
+      <input type="search" id="q" class="search" placeholder="Поиск по названию..." autocomplete="off">
+      <select id="sort" class="sort" aria-label="Сортировка">
+        <option value="new" selected>Новинки</option>
+        <option value="old">Ранее опубликованные</option>
+      </select>
+    </div>
+    <p class="count-note" id="count-note"></p>
+  </section>
+
+  <section class="grid" id="grid" aria-label="Эскизы коллекции"></section>
+  <p class="empty" id="empty" hidden>Ничего не найдено. Попробуйте изменить запрос.</p>
+</main>
+
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="f-col">
+      <p class="f-title">by @anette_mani</p>
+      <p class="f-text">Создаю цифровую эстетику для мастеров, которые ценят качество и уникальность. Ваши лучшие работы начинаются с моих эскизов.</p>
+      <p class="f-badges"><span>Уникальность</span><span>Сделано с любовью</span></p>
+    </div>
+    <div class="f-col">
+      <p class="f-title">Коллекции</p>
+      <nav class="f-links">
+        <a href="autosketch.html">Авторские эскизы AM</a>
+        <a href="mynails.html">MY NAILS</a>
+        <a href="xmq.html">XMQ</a>
+      </nav>
+    </div>
+    <div class="f-col">
+      <p class="f-title">Связь с автором</p>
+      <nav class="f-links">
+        <a href="https://t.me/anette_mani" target="_blank" rel="noopener">Telegram</a>
+        <a href="mailto:ann19@mail.ru">ann19@mail.ru</a>
+      </nav>
+    </div>
+  </div>
+  <p class="copyright">&copy; 2026 by @anette_mani. Все права защищены</p>
+</footer>
+
+<div class="lightbox" id="lightbox" hidden>
+  <button class="lb-close" id="lb-close" aria-label="Закрыть">&times;</button>
+  <figure class="lb-body">
+    <div class="lb-img-wrap"><div class="lb-img" id="lb-img"></div><div class="guard"></div></div>
+    <figcaption>
+      <p class="lb-title" id="lb-title"></p>
+      <a class="btn btn-solid" id="lb-ali" href="#" target="_blank" rel="noopener">Найти на AliExpress</a>
+    </figcaption>
+  </figure>
+</div>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/protect.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
