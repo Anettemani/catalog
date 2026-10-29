@@ -84,3 +84,65 @@
     if (e.button === 1) e.preventDefault();
   }, { capture: true });
 })();
+
+
+/* ============================================================
+   6. Ловушка PrintScreen (кнопка «снимок экрана» на Windows):
+   страница на миг скрывается белой «шторкой», буфер обмена
+   затирается, показывается предупреждение об авторских правах.
+   ============================================================ */
+(function () {
+  'use strict';
+
+  var overlay = null;
+  var restoreTimer = null;
+  var toastTimer = null;
+  var armed = false;
+  var WARN = 'Эскизы защищены авторским правом © @anette_mani';
+
+  function warn() {
+    var t = document.getElementById('protect-toast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'protect-toast';
+      t.className = 'toast';
+      t.setAttribute('role', 'status');
+      document.body.appendChild(t);
+    }
+    t.textContent = WARN;
+    t.style.zIndex = '100001';
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { t.classList.remove('show'); }, 2400);
+  }
+
+  function trap() {
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.style.cssText =
+        'position:fixed;inset:0;z-index:100000;background:#fff;' +
+        'display:none;pointer-events:none;';
+      document.body.appendChild(overlay);
+    }
+    overlay.style.display = 'block';
+    clearTimeout(restoreTimer);
+    restoreTimer = setTimeout(function () { overlay.style.display = 'none'; }, 900);
+
+    // Затираем буфер обмена, если снимок попал туда
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText('').catch(function () {});
+    }
+    warn();
+  }
+
+  function onKey(e) {
+    if ((e.key || '').toLowerCase() !== 'printscreen') return;
+    if (armed) return;
+    armed = true;
+    trap();
+    setTimeout(function () { armed = false; }, 1100);
+  }
+
+  document.addEventListener('keydown', onKey, { capture: true });
+  document.addEventListener('keyup', onKey, { capture: true });
+})();
