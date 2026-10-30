@@ -19,6 +19,7 @@
   var emptyNote = document.getElementById('empty');
 
   var IMG_DIR = 'assets/img/wm/';
+  var HI_DIR = 'assets/img/wm/hi/'; // увеличенные версии (1800px) для лайтбокса и лупы
 
   /* ---------- Рендер ---------- */
 
@@ -106,7 +107,9 @@
     if (!visibleItems.length) return;
     lbIndex = (idx + visibleItems.length) % visibleItems.length; // зацикливание
     var item = visibleItems[lbIndex];
+    lbImg.dataset.cur = item.img;
     lbImg.style.backgroundImage = 'url("' + IMG_DIR + item.img + '")';
+    upgradeHi(item);
     lbTitle.textContent = item.t;
     if (item.ali) {
       lbAli.hidden = false;
@@ -118,6 +121,21 @@
     if (lbCounter) lbCounter.textContent = (lbIndex + 1) + ' / ' + visibleItems.length;
     lightbox.hidden = false;
     document.body.style.overflow = 'hidden';
+  }
+
+  /* Увеличенная версия для лупы: сначала показываем быстрый 900px,
+     затем бесшовно подменяем на 1800px. Нет hi-версии — остаётся 900px. */
+  var hiMiss = {}; // эскизы, у которых hi-версии нет
+
+  function upgradeHi(item) {
+    if (hiMiss[item.img]) return;
+    var probe = new Image();
+    probe.onload = function () {
+      if (lbImg.dataset.cur !== item.img) return; // открыт уже другой эскиз
+      lbImg.style.backgroundImage = 'url("' + HI_DIR + item.img + '")';
+    };
+    probe.onerror = function () { hiMiss[item.img] = true; };
+    probe.src = HI_DIR + item.img;
   }
 
   function openLB(item) {
