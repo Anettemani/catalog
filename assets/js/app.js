@@ -349,13 +349,13 @@
     }
   }, { passive: true });
 
-  // смена эскиза или закрытие лайтбокса сбрасывает масштаб
+  // смена эскиза или закрытие лайтбокса сбрасывает масштаб;
+  // бесшовная подмена на hi-версию того же эскиза (/hi/ в пути) зум не сбрасывает
   var lastBG = '';
   new MutationObserver(function () {
     var bg = lbImg.style.backgroundImage;
-    if (bg !== lastBG) {
-      lastBG = bg;
-      if (zoomed) exitZoom();
-    }
+    if (bg === lastBG) return;
+    lastBG = bg;
+    if (zoomed && bg.indexOf('/hi/') === -1) exitZoom();
   }).observe(lbImg, { attributes: true, attributeFilter: ['style'] });
 })();
