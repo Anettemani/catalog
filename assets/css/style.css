@@ -650,7 +650,24 @@ img { -webkit-user-drag: none; pointer-events: none; }
   background-size: contain;
 }
 
-.lb-img-wrap .guard { cursor: default; }
+/* ---------- Лупа в лайтбоксе ---------- */
+.lb-img-wrap {
+  cursor: zoom-in;
+  touch-action: none; /* касания обрабатывает лупа, а не браузер */
+}
+.lb-img-wrap.zoomed { cursor: zoom-out; }
+.lb-img-wrap .guard { cursor: inherit; }
+
+/* подсказка о лупе */
+.lb-hint {
+  font-size: 10.5px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #A99696;
+  text-align: center;
+  margin-top: -6px;
+  padding: 0 16px;
+}
 
 .lb-body figcaption {
   display: flex;
