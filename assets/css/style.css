@@ -548,6 +548,9 @@ img { -webkit-user-drag: none; pointer-events: none; }
 
 .btn:hover { background: var(--ink); color: #fff; }
 
+/* Кнопка без ссылки (ali:'') полностью скрывается */
+.btn[hidden] { display: none; }
+
 .btn-solid {
   background: var(--ink);
   color: #fff;

@@ -37,7 +37,7 @@
         '</div>' +
         '<div class="item-body">' +
           '<h3 class="item-title">' + esc(item.t) + '</h3>' +
-          '<a class="btn" href="' + esc(item.ali) + '" target="_blank" rel="noopener nofollow">Найти на AliExpress</a>' +
+          (item.ali ? '<a class="btn" href="' + esc(item.ali) + '" target="_blank" rel="noopener nofollow">Найти на AliExpress</a>' : '') +
         '</div>' +
       '</article>'
     );
@@ -108,7 +108,13 @@
     var item = visibleItems[lbIndex];
     lbImg.style.backgroundImage = 'url("' + IMG_DIR + item.img + '")';
     lbTitle.textContent = item.t;
-    lbAli.setAttribute('href', item.ali);
+    if (item.ali) {
+      lbAli.hidden = false;
+      lbAli.setAttribute('href', item.ali);
+    } else {
+      lbAli.hidden = true;
+      lbAli.removeAttribute('href');
+    }
     if (lbCounter) lbCounter.textContent = (lbIndex + 1) + ' / ' + visibleItems.length;
     lightbox.hidden = false;
     document.body.style.overflow = 'hidden';

@@ -5,6 +5,7 @@
 // Формат картинки — WebP (до 900 px по большей стороне, качество ~78).
 // JPG тоже работает — просто укажите его имя файла.
 // Счётчик дизайнов на главной странице считается автоматически.
+// Если ссылка на пластину ещё не готова — укажите ali:'' : кнопка «Найти на AliExpress» просто не появится.
 
 const CATALOG = {
   mynails: {
@@ -58,9 +59,10 @@ const CATALOG = {
     code: 'XMQ',
     desc: 'Смелые и современные решения для тех, кто не боится экспериментировать.',
     items: [
+      {n:34,t:'XMQ #034 - Soft Gore',img:'xmq034-d142a2.webp',ali:''},
       {n:32,t:'XMQ #032 - Torn veil',img:'xmq032-48581f.webp',ali:'https://aliexpress.ru/item/1005012122904162.html'},
       {n:31,t:'XMQ #031 - Black letter',img:'xmq031-255d42.webp',ali:'https://aliexpress.ru/item/1005012122904162.html'},
-      {n:30,t:'XMQ #030',img:'xmq003-eb1da4.webp',ali:'https://aliexpress.ru/item/1005012122904162.html'},
+      {n:30,t:'XMQ #030 - Midnight poetry',img:'xmq030-5e586f.webp',ali:'https://aliexpress.ru/item/1005012122904162.html'},
       {n:29,t:'XMQ #029 - Cyber piercing',img:'xmq029-e0deab.webp',ali:'https://aliexpress.ru/item/1005011741333270.html'},
       {n:28,t:'XMQ #028 - Cyber tribal',img:'xmq028-a3b1a3.webp',ali:'https://aliexpress.ru/item/1005011741333270.html'},
       {n:27,t:'XMQ #027 - Aura helper',img:'xmq027-012c0d.webp',ali:'https://aliexpress.ru/item/1005011741333270.html'},
