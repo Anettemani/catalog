@@ -290,18 +290,20 @@
   window.addEventListener('resize', function () {
     if (!lbBox.hidden) fitLB();
   });
+  lbBox.__fitLB = fitLB; // лупа вызывает это после сброса зума при resize
 })();
 
 /* ============================================================
    Лупа в лайтбоксе.
-   Десктоп: клик — приблизить ×2.5, движение мыши — осмотр,
-   повторный клик — обратно. Зум происходит внутри бокса эскиза.
+   Десктоп: клик — приблизить до покрытия экрана, колёсико —
+   плавное приближение 1×–4× под курсором, движение мыши — осмотр,
+   повторный клик (или колёсико вниз) — обратно.
    Мобильный: пинч (раздвижение пальцами) — плавное приближение 1×–4×,
    один палец — осмотр деталей, сведение пальцев — отдаление,
    двойное касание — приблизить до покрытия экрана / обратно.
    Увеличенная картинка рисуется на отдельном полноэкранном слое .lb-zoom,
    поэтому при зуме эскиз выходит за границы своего бокса —
-   вплоть до полного покрытия экрана.
+   вплоть до полного покрытия экрана (и на ПК, и на телефоне).
    ============================================================ */
 (function () {
   'use strict';
@@ -331,10 +333,10 @@
   hint.className = 'lb-hint';
   var HINT_IDLE = TOUCH
     ? 'Разведите пальцы или дважды коснитесь, чтобы приблизить'
-    : 'Нажмите на эскиз, чтобы приблизить';
+    : 'Нажмите на эскиз или покрутите колёсико мыши, чтобы приблизить';
   var HINT_ZOOM = TOUCH
     ? 'Ведите пальцем, чтобы осмотреть. Сведите пальцы или дважды коснитесь — уменьшить'
-    : 'Ведите мышью, чтобы осмотреть. Нажмите ещё раз — уменьшить';
+    : 'Ведите мышью, чтобы осмотреть. Колёсико меняет увеличение, клик — назад';
   hint.textContent = HINT_IDLE;
   lightbox.querySelector('.lb-body').appendChild(hint);
 
@@ -394,17 +396,7 @@
     }
   }
 
-  function enterZoom(s, ex, ey) { // десктопный зум внутри бокса
-    var r = lbImg.getBoundingClientRect();
-    if (!r.width) return;
-    var ux = Math.max(0, Math.min(1, (ex - r.left) / r.width));
-    var uy = Math.max(0, Math.min(1, (ey - r.top) / r.height));
-    applyView(s,
-      posKeeping(ux, ex - r.left, r.width, s),
-      posKeeping(uy, ey - r.top, r.height, s));
-  }
-
-  /* ----- мобильный: полноэкранный слой, зум выходит за границы бокса -----
+  /* ----- полноэкранный слой: зум выходит за границы бокса -----
      Размер картинки на слое: (fitW*s, fitH*s), смещение в пикселях.
      «Держим» точку эскиза с долей u под пальцем: ox = ex - u*fitW*s,
      края удерживаем на экране: ox в [min(0; W-w); max(0; W-w)]. */
@@ -467,6 +459,28 @@
     else applyView(1, 50, 50);
   }
 
+  /* ----- десктоп: позиция мыши = «окно» в увеличенную картинку.
+     Точка u = ex/W остаётся под курсором при любом масштабе,
+     поэтому зум и осмотр идут без скачков ----- */
+  function showLayerAt(s) {
+    if (!layerOn) { layerOn = true; lightbox.classList.add('lb-zoom-on'); }
+    scale = s;
+    markZoom(true);
+  }
+
+  function placeByMouse(ex, ey) {
+    var d = fitted();
+    if (!d.w) return;
+    var W = layer.clientWidth || window.innerWidth;
+    var H = layer.clientHeight || window.innerHeight;
+    var w = d.w * scale, h = d.h * scale;
+    var ox = w > W ? -(w - W) * (ex / W) : (W - w) / 2;
+    var oy = h > H ? -(h - H) * (ey / H) : (H - h) / 2;
+    layer.style.backgroundImage = lbImg.style.backgroundImage;
+    layer.style.backgroundSize = Math.round(w) + 'px ' + Math.round(h) + 'px';
+    layer.style.backgroundPosition = Math.round(ox) + 'px ' + Math.round(oy) + 'px';
+  }
+
   /* масштаб, при котором эскиз покрывает весь экран */
   function coverScale() {
     var d = fitted();
@@ -484,11 +498,16 @@
   }
 
   function toggleZoomAt(ex, ey) {
+    // единый механизм для ПК и сенсорных экранов: зум включается на
+    // полноэкранном слое, картинка выходит за границы своего бокса
+    // и может занять весь экран
     if (TOUCH) {
       var uv = boxFrac(ex, ey);
       applyLayerView(targetScale(), ex, ey, uv[0], uv[1]);
     } else {
-      enterZoom(Z, ex, ey);
+      // на ПК точка под курсором остаётся под курсором — без скачка
+      showLayerAt(targetScale());
+      placeByMouse(ex, ey);
     }
   }
 
@@ -510,9 +529,9 @@
 
   function onMouseMove(e) {
     if (!zoomed || !zoomZone(e)) return;
+    if (Date.now() - lastTouchT < 800) return; // это продолжение тача, не мышь
     if (layerOn) {
-      var uv = layerFrac(e.clientX, e.clientY);
-      placeLayer(scale, e.clientX, e.clientY, uv[0], uv[1]);
+      placeByMouse(e.clientX, e.clientY);
     } else {
       var r = lbImg.getBoundingClientRect();
       var px = Math.max(0, Math.min(100, ((e.clientX - r.left) / r.width) * 100));
@@ -627,6 +646,37 @@
 
   lightbox.addEventListener('click', onClick);
   lightbox.addEventListener('mousemove', onMouseMove);
+
+  /* колёсико мыши: плавный зум под курсором на полноэкранном слое —
+     вверх приближает (вплоть до покрытия всего экрана и дальше до 4×),
+     вниз возвращает к исходному виду. Один щелчок колеса ≈ ×1.25. */
+  lightbox.addEventListener('wheel', function (e) {
+    if (lightbox.hidden) return;
+    if (e.target === lightbox || !zoomZone(e)) return;
+    if (!e.deltaY) return;
+    e.preventDefault();
+    var k = Math.exp(-e.deltaY * 0.0022); // сила зависит от величины прокрутки
+    var s = Math.max(1, Math.min(sMax(), (layerOn ? scale : 1) * k));
+    if (s <= 1.02) {
+      layerOff();
+      markZoom(false);
+    } else if (TOUCH) {
+      var uv = layerOn ? layerFrac(e.clientX, e.clientY) : boxFrac(e.clientX, e.clientY);
+      applyLayerView(s, e.clientX, e.clientY, uv[0], uv[1]);
+    } else {
+      showLayerAt(s);
+      placeByMouse(e.clientX, e.clientY);
+    }
+  }, { passive: false });
+
+  /* поворот экрана / изменение окна при включённом зуме: возвращаем
+     исходный вид и заново подгоняем бокс эскиза под новые размеры */
+  window.addEventListener('resize', function () {
+    if (layerOn) {
+      exitZoom();
+      if (lightbox.__fitLB) lightbox.__fitLB();
+    }
+  });
   lightbox.addEventListener('touchstart', onTouchStart, { passive: true });
   lightbox.addEventListener('touchmove', onTouchMove, { passive: false });
   lightbox.addEventListener('touchend', onTouchEnd, { passive: true });
