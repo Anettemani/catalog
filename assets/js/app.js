@@ -318,9 +318,18 @@
     layer.className = 'lb-zoom';
     lightbox.appendChild(layer);
   }
+  var loupe = document.getElementById('lb-loupe');
+  if (!loupe) { // лупа на увеличенном эскизе (только ПК)
+    loupe = document.createElement('div');
+    loupe.id = 'lb-loupe';
+    loupe.className = 'lb-loupe';
+    lightbox.appendChild(loupe);
+  }
 
-  var Z = 2.5;   // шаг двойного касания и десктопной лупы
-  var ZMAX = 4;  // потолок зума
+  var Z = 2.5;        // шаг двойного касания и десктопной лупы
+  var ZMAX = 4;       // потолок зума
+  var LP_L = 2.5;     // увеличение лупы поверх увеличенного эскиза
+  var LP_R = 95;      // радиус линзы (диаметр 190px)
   var TOUCH = 'ontouchstart' in window ||
               (window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
 
@@ -337,7 +346,7 @@
     : 'Нажмите на эскиз или покрутите колёсико мыши, чтобы приблизить';
   var HINT_ZOOM = TOUCH
     ? 'Ведите пальцем, чтобы осмотреть. Сведите пальцы или дважды коснитесь — уменьшить'
-    : 'Нажмите ещё раз или крутите колёсико вниз, чтобы уменьшить';
+    : 'Ведите мышью — лупа покажет детали. Нажмите ещё раз или крутите колёсико вниз, чтобы уменьшить';
   hint.textContent = HINT_IDLE;
   lightbox.querySelector('.lb-body').appendChild(hint);
 
@@ -408,6 +417,35 @@
     layer.style.backgroundImage = 'none';
     layer.style.backgroundSize = '';
     layer.style.backgroundPosition = '';
+    loupeOff();
+  }
+
+  /* ----- лупа поверх увеличенного эскиза (ПК): круг под курсором
+     показывает детали с ещё большим увеличением (LP_L к текущему виду) ----- */
+  function loupeOff() {
+    loupe.classList.remove('lb-loupe-on');
+    layer.classList.remove('lb-cursor-none');
+  }
+
+  function loupeAt(ex, ey) {
+    if (TOUCH || !layerOn) return;
+    var d = fitted();
+    if (!d.w) { loupeOff(); return; }
+    var pos = (layer.style.backgroundPosition || '0px 0px').split(' ');
+    var ox = parseFloat(pos[0]) || 0, oy = parseFloat(pos[1]) || 0;
+    var w = d.w * scale, h = d.h * scale;
+    var ix = ex - ox, iy = ey - oy; // точка под курсором на картинке слоя
+    if (ix < 0 || iy < 0 || ix > w || iy > h) { loupeOff(); return; }
+    loupe.style.backgroundImage = lbImg.style.backgroundImage;
+    loupe.style.backgroundSize =
+      Math.round(w * LP_L) + 'px ' + Math.round(h * LP_L) + 'px';
+    // точка под курсором — точно в центре линзы
+    loupe.style.backgroundPosition =
+      Math.round(LP_R - ix * LP_L) + 'px ' + Math.round(LP_R - iy * LP_L) + 'px';
+    loupe.style.left = Math.round(ex - LP_R) + 'px';
+    loupe.style.top = Math.round(ey - LP_R) + 'px';
+    loupe.classList.add('lb-loupe-on');
+    layer.classList.add('lb-cursor-none'); // курсор заменяет линза
   }
 
   /* доля эскиза под точкой экрана, считая от бокса эскиза (без ограничений):
@@ -538,10 +576,12 @@
   }
 
   function onMouseMove(e) {
-    if (!zoomed || !zoomZone(e)) return;
+    if (!zoomed) return;
+    if (!zoomZone(e)) { loupeOff(); return; } // кнопки/подпись — линза не нужна
     if (Date.now() - lastTouchT < 800) return; // это продолжение тача, не мышь
     if (layerOn) {
       placeByMouse(e.clientX, e.clientY);
+      loupeAt(e.clientX, e.clientY);
     } else {
       var r = lbImg.getBoundingClientRect();
       var px = Math.max(0, Math.min(100, ((e.clientX - r.left) / r.width) * 100));
@@ -562,6 +602,7 @@
 
   function onTouchStart(e) {
     lastTouchT = Date.now();
+    loupeOff(); // на сенсорном экране лупы нет
     if (lightbox.hidden) return;
     if (!zoomZone(e)) { // жест начат на кнопке/подписи — зум не трогаем
       pinch = null; pan = null; gestureLive = false;
@@ -656,6 +697,7 @@
 
   lightbox.addEventListener('click', onClick);
   lightbox.addEventListener('mousemove', onMouseMove);
+  lightbox.addEventListener('mouseleave', loupeOff);
 
   /* колёсико мыши: плавный зум. На телефоне/планшете — полноэкранный слой
      (до 4×, с осмотром пальцем), на ПК — эскиз растёт за рамки бокса,
@@ -700,6 +742,7 @@
     if (bg === lastBG) return;
     lastBG = bg;
     if (layerOn) layer.style.backgroundImage = bg; // подмена hi-версии прямо на слое
+    if (loupe.classList.contains('lb-loupe-on')) loupe.style.backgroundImage = bg;
     if (zoomed && bg.indexOf('/hi/') === -1) exitZoom();
   }).observe(lbImg, { attributes: true, attributeFilter: ['style'] });
 })();

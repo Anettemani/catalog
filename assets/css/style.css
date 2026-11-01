@@ -744,6 +744,27 @@ img { -webkit-user-drag: none; pointer-events: none; }
   cursor: zoom-out;
 }
 .lightbox.lb-zoom-on .lb-zoom { display: block; }
+.lb-zoom.lb-cursor-none { cursor: none; } /* курсор над эскизом заменяет линза */
+
+/* ---------- Лупа на увеличенном эскизе (ПК): круглая линза под
+   курсором показывает детали с ещё бо́льшим увеличением ---------- */
+.lb-loupe {
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 190px;
+  height: 190px;
+  border-radius: 50%;
+  z-index: 206; /* выше слоя зума, ниже кнопок закрытия и листания */
+  display: none;
+  pointer-events: none; /* линза не мешает кликам и жестам */
+  background-color: rgba(20, 16, 16, 0.98);
+  background-repeat: no-repeat;
+  box-shadow:
+    0 0 0 3px rgba(245, 239, 238, 0.95),
+    0 10px 30px rgba(0, 0, 0, 0.5);
+}
+.lb-loupe.lb-loupe-on { display: block; }
 
 /* ---------- Тост защиты ---------- */
 .toast {
