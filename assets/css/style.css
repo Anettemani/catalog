@@ -576,6 +576,9 @@ img { -webkit-user-drag: none; pointer-events: none; }
   justify-content: center;
   padding: 24px;
   overflow-y: auto; /* контент выше экрана (альбом + подпись) не обрезается */
+  /* тапы, клики и прокрутка работают, а браузерный пинч-зум и
+     двойной тап отключены — жестами управляет лупа */
+  touch-action: pan-x pan-y;
 }
 
 .lightbox[hidden] { display: none; }
@@ -656,7 +659,6 @@ img { -webkit-user-drag: none; pointer-events: none; }
 /* ---------- Лупа в лайтбоксе ---------- */
 .lb-img-wrap {
   cursor: zoom-in;
-  touch-action: none; /* касания обрабатывает лупа, а не браузер */
 }
 .lb-img-wrap.zoomed { cursor: zoom-out; }
 .lb-img-wrap .guard { cursor: inherit; }
@@ -728,6 +730,20 @@ img { -webkit-user-drag: none; pointer-events: none; }
   .lightbox { padding-top: 16px; padding-bottom: 16px; }
   .lb-hint { display: none; }
 }
+
+/* ---------- Полноэкранный слой лупы: при пинче эскиз выходит
+   за границы своего бокса и может занять весь экран ---------- */
+.lb-zoom {
+  position: fixed;
+  inset: 0;
+  z-index: 205; /* выше эскиза и подписи, ниже кнопок закрытия и листания */
+  display: none;
+  background-color: rgba(20, 16, 16, 0.98);
+  background-repeat: no-repeat;
+  touch-action: pan-x pan-y; /* тап по слою работает, browser-zoom выключен */
+  cursor: zoom-out;
+}
+.lightbox.lb-zoom-on .lb-zoom { display: block; }
 
 /* ---------- Тост защиты ---------- */
 .toast {
