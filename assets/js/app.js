@@ -185,8 +185,9 @@
   });
 
   // свайпы на сенсорных экранах
-  var touchX = null, touchY = null, touchOnImage = false;
+  var touchX = null, touchY = null, touchOnImage = false, pinchSeen = false;
   lightbox.addEventListener('touchstart', function (e) {
+    if (e.touches.length > 1) { pinchSeen = true; touchX = null; return; }
     if (e.touches.length !== 1) return;
     touchX = e.touches[0].clientX;
     touchY = e.touches[0].clientY;
@@ -206,6 +207,8 @@
     var dx = e.changedTouches[0].clientX - touchX;
     var dy = e.changedTouches[0].clientY - touchY;
     touchX = touchY = null;
+    // жест с участием двух пальцев (пинч) листанию не помеха — пропускаем
+    if (pinchSeen) { if (e.touches.length === 0) pinchSeen = false; return; }
     if (touchOnImage) return;
     if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.4) {
       if (dx < 0) showAt(lbIndex + 1); else showAt(lbIndex - 1);
@@ -267,8 +270,12 @@
 })();
 
 /* ============================================================
-   Лупа в лайтбоксе: клик по эскизу — приблизить ×2.5,
-   движение мыши/пальца — осмотреть детали, повторный клик — обратно
+   Лупа в лайтбоксе.
+   Десктоп: клик — приблизить ×2.5, движение мыши — осмотр,
+   повторный клик — обратно.
+   Мобильный: пинч (раздвижение пальцами) — плавное приближение 1×–4×,
+   один палец — осмотр деталей, сведение пальцев — отдаление,
+   двойное касание — ×2.5 / обратно. Одиночное касание ничего не делает.
    ============================================================ */
 (function () {
   'use strict';
@@ -277,14 +284,25 @@
   var lbImg = document.getElementById('lb-img');
   if (!lightbox || !wrap || !lbImg) return;
 
-  var Z = 2.5; // во сколько раз приблизить
+  var Z = 2.5;   // шаг двойного касания и десктопной лупы
+  var ZMAX = 4;  // потолок пинча
+  var TOUCH = 'ontouchstart' in window ||
+              (window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+
   var zoomed = false;
+  var scale = 1;
   lbImg.dataset.zoom = '0';
 
   // подсказка под кнопкой AliExpress
   var hint = document.createElement('p');
   hint.className = 'lb-hint';
-  hint.textContent = 'Нажмите на эскиз, чтобы приблизить';
+  var HINT_IDLE = TOUCH
+    ? 'Разведите пальцы или дважды коснитесь, чтобы приблизить'
+    : 'Нажмите на эскиз, чтобы приблизить';
+  var HINT_ZOOM = TOUCH
+    ? 'Ведите пальцем, чтобы осмотреть. Сведите пальцы или дважды коснитесь — уменьшить'
+    : 'Ведите мышью, чтобы осмотреть. Нажмите ещё раз — уменьшить';
+  hint.textContent = HINT_IDLE;
   lightbox.querySelector('.lb-body').appendChild(hint);
 
   function fitted() {
@@ -301,52 +319,174 @@
     return { w: 0, h: 0 };
   }
 
-  function moveZoom(x, y) {
-    var r = lbImg.getBoundingClientRect();
-    if (!r.width || !r.height) return;
-    var px = ((x - r.left) / r.width) * 100;
-    var py = ((y - r.top) / r.height) * 100;
-    px = Math.max(0, Math.min(100, px));
-    py = Math.max(0, Math.min(100, py));
-    lbImg.style.backgroundPosition = px.toFixed(2) + '% ' + py.toFixed(2) + '%';
+  /* Геометрия: слой фона размером (W*s, H*s), позиция P% сдвигает его
+     на W*(1-s)*P/100. Точка слоя с долей u видна в координате e:
+     e = W*(1-s)*P/100 + u*W*s.  «Держим» точку u под пальцем (e) —
+     картинка следует за жестом, края ограничивает clamp P в [0;100]. */
+  function curPos() {
+    var bp = (lbImg.style.backgroundPosition || '50% 50%').split(' ');
+    return [parseFloat(bp[0]) || 0, parseFloat(bp[1]) || 0];
   }
 
-  function enterZoom(x, y) {
+  function fracUnder(ex, W, s, px) {
+    return (ex - W * (1 - s) * px / 100) / (W * s);
+  }
+
+  function posKeeping(u, ex, W, s) {
+    if (s <= 1.001) return 50;
+    var p = 100 * (ex - u * W * s) / (W * (1 - s));
+    return Math.max(0, Math.min(100, p));
+  }
+
+  function applyView(s, px, py) {
     var d = fitted();
-    if (!d.w || !d.h) return; // картинка ещё не готова — просто ждём
-    zoomed = true;
-    lbImg.dataset.zoom = '1';
-    wrap.classList.add('zoomed');
-    lbImg.style.backgroundSize =
-      Math.round(d.w * Z) + 'px ' + Math.round(d.h * Z) + 'px';
-    moveZoom(x, y);
-    hint.textContent = 'Ведите пальцем или мышью, чтобы осмотреть. Нажмите ещё раз — уменьшить';
+    if (!d.w) return;
+    scale = s;
+    if (s > 1.02) {
+      lbImg.style.backgroundSize =
+        Math.round(d.w * s) + 'px ' + Math.round(d.h * s) + 'px';
+      lbImg.style.backgroundPosition = px.toFixed(2) + '% ' + py.toFixed(2) + '%';
+      if (!zoomed) {
+        zoomed = true;
+        lbImg.dataset.zoom = '1';
+        wrap.classList.add('zoomed');
+        hint.textContent = HINT_ZOOM;
+      }
+    } else if (zoomed) {
+      zoomed = false;
+      scale = 1;
+      lbImg.dataset.zoom = '0';
+      wrap.classList.remove('zoomed');
+      lbImg.style.backgroundSize = '';
+      lbImg.style.backgroundPosition = '';
+      hint.textContent = HINT_IDLE;
+    }
   }
 
-  function exitZoom() {
-    zoomed = false;
-    lbImg.dataset.zoom = '0';
-    wrap.classList.remove('zoomed');
-    lbImg.style.backgroundSize = '';
-    lbImg.style.backgroundPosition = '';
-    hint.textContent = 'Нажмите на эскиз, чтобы приблизить';
+  function enterZoom(s, ex, ey) {
+    var r = lbImg.getBoundingClientRect();
+    if (!r.width) return;
+    var ux = Math.max(0, Math.min(1, (ex - r.left) / r.width));
+    var uy = Math.max(0, Math.min(1, (ey - r.top) / r.height));
+    applyView(s,
+      posKeeping(ux, ex - r.left, r.width, s),
+      posKeeping(uy, ey - r.top, r.height, s));
   }
+
+  function exitZoom() { applyView(1, 50, 50); }
+
+  /* ---------- десктоп: клик и движение мыши ---------- */
+  var lastTouchT = 0;
 
   wrap.addEventListener('click', function (e) {
     if (lightbox.hidden) return;
-    if (zoomed) exitZoom(); else enterZoom(e.clientX, e.clientY);
+    if (Date.now() - lastTouchT < 800) return; // тап: жесты, а не клик
+    if (zoomed) exitZoom(); else enterZoom(Z, e.clientX, e.clientY);
   });
 
-  // десктоп: картинка следует за курсором
   wrap.addEventListener('mousemove', function (e) {
-    if (zoomed) moveZoom(e.clientX, e.clientY);
+    if (!zoomed) return;
+    var r = lbImg.getBoundingClientRect();
+    var px = Math.max(0, Math.min(100, ((e.clientX - r.left) / r.width) * 100));
+    var py = Math.max(0, Math.min(100, ((e.clientY - r.top) / r.height) * 100));
+    lbImg.style.backgroundPosition = px.toFixed(2) + '% ' + py.toFixed(2) + '%';
   });
 
-  // мобильные: осмотр пальцем
-  wrap.addEventListener('touchmove', function (e) {
-    if (zoomed && e.touches.length === 1) {
-      moveZoom(e.touches[0].clientX, e.touches[0].clientY);
+  /* ---------- сенсорные экраны: пинч, панорама, двойное касание ---------- */
+  var pinch = null; // {d0, s0, ux, uy} — стартовое состояние жеста
+  var pan = null;   // {ux, uy, sx, sy} — точка под пальцем и его старт
+  var lastTapEnd = 0, tapX = 0, tapY = 0, moved = false;
+
+  function tdist(t) {
+    var dx = t[0].clientX - t[1].clientX, dy = t[0].clientY - t[1].clientY;
+    return Math.sqrt(dx * dx + dy * dy) || 1;
+  }
+
+  wrap.addEventListener('touchstart', function (e) {
+    lastTouchT = Date.now();
+    if (lightbox.hidden) return;
+    moved = false;
+    if (e.touches.length === 2) {
+      var r = lbImg.getBoundingClientRect();
+      if (!r.width) return;
+      var p = curPos();
+      var mx = (e.touches[0].clientX + e.touches[1].clientX) / 2 - r.left;
+      var my = (e.touches[0].clientY + e.touches[1].clientY) / 2 - r.top;
+      pinch = {
+        d0: tdist(e.touches), s0: scale,
+        ux: fracUnder(mx, r.width, scale, p[0]),
+        uy: fracUnder(my, r.height, scale, p[1])
+      };
+      pan = null;
+    } else if (e.touches.length === 1) {
+      pinch = null;
+      if (zoomed) {
+        var r2 = lbImg.getBoundingClientRect();
+        var p2 = curPos();
+        pan = {
+          sx: e.touches[0].clientX, sy: e.touches[0].clientY,
+          ux: fracUnder(e.touches[0].clientX - r2.left, r2.width, scale, p2[0]),
+          uy: fracUnder(e.touches[0].clientY - r2.top, r2.height, scale, p2[1])
+        };
+      }
     }
+  }, { passive: true });
+
+  wrap.addEventListener('touchmove', function (e) {
+    if (lightbox.hidden) return;
+    if (e.touches.length === 2 && pinch) {
+      e.preventDefault();
+      var r = lbImg.getBoundingClientRect();
+      var s = Math.max(1, Math.min(ZMAX, pinch.s0 * tdist(e.touches) / pinch.d0));
+      var mx = (e.touches[0].clientX + e.touches[1].clientX) / 2 - r.left;
+      var my = (e.touches[0].clientY + e.touches[1].clientY) / 2 - r.top;
+      applyView(s,
+        posKeeping(pinch.ux, mx, r.width, s),
+        posKeeping(pinch.uy, my, r.height, s));
+      moved = true;
+    } else if (e.touches.length === 1 && pan && zoomed) {
+      var dx = e.touches[0].clientX - pan.sx, dy = e.touches[0].clientY - pan.sy;
+      if (dx * dx + dy * dy > 64) moved = true; // >8px — это осмотр, не тап
+      e.preventDefault();
+      var r2 = lbImg.getBoundingClientRect();
+      lbImg.style.backgroundPosition =
+        posKeeping(pan.ux, e.touches[0].clientX - r2.left, r2.width, scale).toFixed(2) + '% ' +
+        posKeeping(pan.uy, e.touches[0].clientY - r2.top, r2.height, scale).toFixed(2) + '%';
+    }
+  }, { passive: false });
+
+  wrap.addEventListener('touchend', function (e) {
+    lastTouchT = Date.now();
+    if (lightbox.hidden) return;
+    if (pinch && e.touches.length < 2) {
+      // пинч закончен; оставшийся палец продолжает панораму
+      pinch = null;
+      if (e.touches.length === 1 && zoomed) {
+        var r = lbImg.getBoundingClientRect();
+        var p = curPos();
+        pan = {
+          sx: e.touches[0].clientX, sy: e.touches[0].clientY,
+          ux: fracUnder(e.touches[0].clientX - r.left, r.width, scale, p[0]),
+          uy: fracUnder(e.touches[0].clientY - r.top, r.height, scale, p[1])
+        };
+      } else {
+        pan = null;
+      }
+      return;
+    }
+    if (e.touches.length === 0 && !moved) {
+      var tc = e.changedTouches[0];
+      var now = Date.now();
+      if (now - lastTapEnd < 320 &&
+          Math.abs(tc.clientX - tapX) < 28 && Math.abs(tc.clientY - tapY) < 28) {
+        lastTapEnd = 0;
+        if (zoomed) exitZoom(); else enterZoom(Z, tc.clientX, tc.clientY);
+      } else {
+        lastTapEnd = now;
+        tapX = tc.clientX; tapY = tc.clientY;
+      }
+    }
+    if (e.touches.length === 0) pan = null;
   }, { passive: true });
 
   // смена эскиза или закрытие лайтбокса сбрасывает масштаб;

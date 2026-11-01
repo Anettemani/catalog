@@ -658,7 +658,8 @@ img { -webkit-user-drag: none; pointer-events: none; }
 .lb-img-wrap.zoomed { cursor: zoom-out; }
 .lb-img-wrap .guard { cursor: inherit; }
 
-/* подсказка о лупе */
+/* подсказка о лупе; фиксированная высота, чтобы смена текста
+   не перестраивала центровку картинки в момент зума */
 .lb-hint {
   font-size: 10.5px;
   letter-spacing: 0.16em;
@@ -667,6 +668,10 @@ img { -webkit-user-drag: none; pointer-events: none; }
   text-align: center;
   margin-top: -6px;
   padding: 0 16px;
+  min-height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .lb-body figcaption {
@@ -743,6 +748,9 @@ img { -webkit-user-drag: none; pointer-events: none; }
   .lb-nav { width: 42px; height: 42px; font-size: 28px; }
   .lb-prev { left: 8px; }
   .lb-next { right: 8px; }
+  /* длинная подсказка пинча — 3 строки; фиксируем высоту, чтобы
+     смена текста не двигала картинку в момент зума */
+  .lb-hint { min-height: 42px; }
 }
 
 /* ---------- Появление карточек ---------- */
