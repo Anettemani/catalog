@@ -241,6 +241,17 @@
   var lbBox = document.getElementById('lightbox');
   if (!lbImg || !lbBox) return;
 
+  /* Маленький формат 6×12 см: пропорция 2:1 (файл в альбомной ориентации),
+     1:2 (в портретной) или квадрат (временная заглушка XMQ).
+     Большие 10×15 см — это 3:2 и 2:3. */
+  function smallPlate(w, h) {
+    var r = w / h;
+    return r >= 1.7 || (r >= 0.47 && r <= 0.53) || (r >= 0.92 && r <= 1.08);
+  }
+
+  var TOUCH_FIT = 'ontouchstart' in window ||
+      (window.matchMedia && window.matchMedia('(pointer: coarse)').matches);
+
   function fitLB() {
     // при лупе не меняем размер (иначе разойдётся с background-size),
     // но первичную подгонку выполняем всегда
@@ -254,8 +265,20 @@
       if (lbImg.style.backgroundImage !== bg) return;
       lbImg.dataset.fw = probe.naturalWidth;   // запоминаем исходные
       lbImg.dataset.fh = probe.naturalHeight;  // размеры — нужна лупе
-      var maxW = Math.min(960, window.innerWidth * 0.94);
-      var maxH = window.innerHeight * 0.74;
+      var mobile = TOUCH_FIT &&
+          Math.min(window.innerWidth, window.innerHeight) <= 760;
+      var full = mobile && smallPlate(probe.naturalWidth, probe.naturalHeight);
+      lbBox.classList.toggle('lb-fullbleed', full);
+      var maxW, maxH;
+      if (full) {
+        // маленький эскиз на мобильном: от края до края экрана
+        // (портрет — вся ширина, альбом — вся высота)
+        maxW = window.innerWidth;
+        maxH = window.innerHeight;
+      } else {
+        maxW = Math.min(960, window.innerWidth * 0.94);
+        maxH = window.innerHeight * 0.74;
+      }
       var k = Math.min(maxW / probe.naturalWidth, maxH / probe.naturalHeight);
       lbImg.style.width = Math.round(probe.naturalWidth * k) + 'px';
       lbImg.style.height = Math.round(probe.naturalHeight * k) + 'px';
