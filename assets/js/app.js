@@ -121,6 +121,7 @@
     if (lbCounter) lbCounter.textContent = (lbIndex + 1) + ' / ' + visibleItems.length;
     lightbox.hidden = false;
     document.body.style.overflow = 'hidden';
+    syncURL();
   }
 
   /* Увеличенная версия для лупы: сначала показываем быстрый 900px,
@@ -150,6 +151,25 @@
     lightbox.hidden = true;
     lbImg.style.backgroundImage = 'none';
     document.body.style.overflow = '';
+    syncURL();
+  }
+
+  /* ---------- Адресная строка = текущий эскиз: ?design=NNN ----------
+     Пока лайтбокс открыт, адрес всегда указывает на показанный эскиз —
+     ссылку можно скопировать и отправить; лайтбокс закрыт — адрес чистый. */
+  function padNum(n) {
+    return (n < 10 ? '00' : n < 100 ? '0' : '') + n;
+  }
+
+  function syncURL() {
+    try {
+      if (lightbox.hidden) {
+        if (location.search) history.replaceState(null, '', location.pathname);
+      } else if (visibleItems[lbIndex]) {
+        history.replaceState(null, '',
+          location.pathname + '?design=' + padNum(visibleItems[lbIndex].n));
+      }
+    } catch (e) { /* платформа не даёт менять адрес — не критично */ }
   }
 
   grid.addEventListener('click', function (e) {
@@ -221,6 +241,18 @@
   sortSel.addEventListener('change', render);
 
   render();
+
+  /* ---------- Deep-link: ...mynails.html?design=021 — лайтбокс
+     открывается сразу на указанном эскизе ---------- */
+  var design0 = parseInt((location.search.match(/[?&]design=(\d+)/) || [])[1], 10);
+  if (design0) {
+    var item0 = col.items.filter(function (it) { return it.n === design0; })[0];
+    if (item0) {
+      var vis0 = visibleItems.some(function (it) { return it.n === design0; });
+      if (!vis0) { qInput.value = ''; render(); } // эскиз скрыт фильтром — показываем весь каталог
+      openLB(item0);
+    }
+  }
 })();
 
 /* ============================================================
