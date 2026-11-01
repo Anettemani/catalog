@@ -272,9 +272,11 @@
       var maxW, maxH;
       if (full) {
         // маленький эскиз на мобильном: от края до края экрана
-        // (портрет — вся ширина, альбом — вся высота)
+        // (портрет — вся ширина, альбом — вся высота минус строка подписи)
         maxW = window.innerWidth;
-        maxH = window.innerHeight;
+        maxH = window.matchMedia('(orientation: landscape)').matches
+          ? window.innerHeight - 52
+          : window.innerHeight;
       } else {
         maxW = Math.min(960, window.innerWidth * 0.94);
         maxH = window.innerHeight * 0.74;
