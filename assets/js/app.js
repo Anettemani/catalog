@@ -280,6 +280,12 @@
       } else {
         maxW = Math.min(960, window.innerWidth * 0.94);
         maxH = window.innerHeight * 0.74;
+        // большой эскиз на мобильном в альбомной ориентации: вписываем вместе
+        // с подписью в экран, чтобы блок был по центру, а не прижат вверх
+        if (mobile && window.matchMedia('(orientation: landscape)').matches) {
+          maxW = window.innerWidth * 0.94;
+          maxH = window.innerHeight - 96;
+        }
       }
       var k = Math.min(maxW / probe.naturalWidth, maxH / probe.naturalHeight);
       lbImg.style.width = Math.round(probe.naturalWidth * k) + 'px';
