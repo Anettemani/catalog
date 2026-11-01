@@ -295,15 +295,16 @@
 
 /* ============================================================
    Лупа в лайтбоксе.
-   Десктоп: клик — приблизить ×2.5 ВНУТРИ бокса эскиза (не на весь
-   экран), колёсико — плавное приближение 1×–2.5× под курсором,
-   движение мыши — осмотр, повторный клик (или колёсико вниз) — обратно.
+   Десктоп: клик — эскиз вырастает ЗА рамки своего бокса до ~90%
+   экрана (целиком виден, по центру, не на весь монитор),
+   колёсико — плавное приближение 1×–90% под курсором,
+   повторный клик (или колёсико вниз) — обратно.
    Мобильный: пинч (раздвижение пальцами) — плавное приближение 1×–4×,
    один палец — осмотр деталей, сведение пальцев — отдаление,
    двойное касание — приблизить до покрытия экрана / обратно.
-   Увеличенная картинка на мобильном рисуется на отдельном
-   полноэкранном слое .lb-zoom: эскиз выходит за границы своего бокса
-   вплоть до полного покрытия экрана телефона.
+   Увеличенная картинка рисуется на отдельном полноэкранном слое
+   .lb-zoom: на мобильном — вплоть до полного покрытия экрана,
+   на ПК — с полями, эскиз целиком на виду.
    ============================================================ */
 (function () {
   'use strict';
@@ -336,7 +337,7 @@
     : 'Нажмите на эскиз или покрутите колёсико мыши, чтобы приблизить';
   var HINT_ZOOM = TOUCH
     ? 'Ведите пальцем, чтобы осмотреть. Сведите пальцы или дважды коснитесь — уменьшить'
-    : 'Ведите мышью, чтобы осмотреть. Нажмите ещё раз — уменьшить';
+    : 'Нажмите ещё раз или крутите колёсико вниз, чтобы уменьшить';
   hint.textContent = HINT_IDLE;
   lightbox.querySelector('.lb-body').appendChild(hint);
 
@@ -490,27 +491,33 @@
     return Math.max(Z, coverScale());
   }
 
-  /* ----- десктоп: зум внутри бокса эскиза. Картинка увеличивается
-     в своих границах (×2.5), курсор остаётся на той же точке эскиза.
-     Полноэкранный слой на ПК не используется ----- */
-  function enterZoom(s, ex, ey) {
-    var r = lbImg.getBoundingClientRect();
-    if (!r.width) return;
-    var ux = Math.max(0, Math.min(1, (ex - r.left) / r.width));
-    var uy = Math.max(0, Math.min(1, (ey - r.top) / r.height));
-    applyView(s,
-      posKeeping(ux, ex - r.left, r.width, s),
-      posKeeping(uy, ey - r.top, r.height, s));
+  /* ----- десктоп: показ слоя с заданным масштабом (общий с мобильным) ----- */
+  function showLayerAt(s) {
+    if (!layerOn) { layerOn = true; lightbox.classList.add('lb-zoom-on'); }
+    scale = s;
+    markZoom(true);
+  }
+
+  /* масштаб ПК: эскиз вырастает за рамки бокса, но целиком остаётся
+     на мониторе (~90% экрана, с полями) — не на весь экран */
+  function fitScalePC() {
+    var d = fitted();
+    if (!d.w) return Z;
+    return Math.max(1.001, Math.min(
+      (window.innerWidth * 0.90) / d.w,
+      (window.innerHeight * 0.90) / d.h
+    ));
   }
 
   function toggleZoomAt(ex, ey) {
     if (TOUCH) {
-      // телефон/планшет: полноэкранный слой, зум выходит за границы бокса
+      // телефон/планшет: зум до покрытия всего экрана, точка под пальцем
       var uv = boxFrac(ex, ey);
       applyLayerView(targetScale(), ex, ey, uv[0], uv[1]);
     } else {
-      // ПК: зум ×2.5 внутри бокса эскиза — без полноэкранного режима
-      enterZoom(Z, ex, ey);
+      // ПК: эскиз выходит за рамки бокса до ~90% экрана, по центру
+      showLayerAt(fitScalePC());
+      placeByMouse(window.innerWidth / 2, window.innerHeight / 2);
     }
   }
 
@@ -650,8 +657,9 @@
   lightbox.addEventListener('click', onClick);
   lightbox.addEventListener('mousemove', onMouseMove);
 
-  /* колёсико мыши: плавный зум под курсором. На телефоне/планшете —
-     полноэкранный слой (до 4×), на ПК — внутри бокса эскиза (до ×2.5).
+  /* колёсико мыши: плавный зум. На телефоне/планшете — полноэкранный слой
+     (до 4×, с осмотром пальцем), на ПК — эскиз растёт за рамки бокса,
+     оставаясь целиком на экране (максимум ~90% монитора).
      Кручение вниз возвращает к исходному виду. */
   lightbox.addEventListener('wheel', function (e) {
     if (lightbox.hidden) return;
@@ -659,7 +667,7 @@
     if (!e.deltaY) return;
     e.preventDefault();
     var k = Math.exp(-e.deltaY * 0.0022); // сила зависит от величины прокрутки
-    var s = Math.max(1, Math.min(TOUCH ? sMax() : Z, (layerOn ? scale : 1) * k));
+    var s = Math.max(1, Math.min(TOUCH ? sMax() : fitScalePC(), (layerOn ? scale : 1) * k));
     if (s <= 1.02) {
       layerOff();
       markZoom(false);
@@ -667,7 +675,8 @@
       var uv = layerOn ? layerFrac(e.clientX, e.clientY) : boxFrac(e.clientX, e.clientY);
       applyLayerView(s, e.clientX, e.clientY, uv[0], uv[1]);
     } else {
-      enterZoom(s, e.clientX, e.clientY);
+      showLayerAt(s);
+      placeByMouse(e.clientX, e.clientY);
     }
   }, { passive: false });
 
