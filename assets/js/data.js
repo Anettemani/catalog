@@ -42,7 +42,7 @@ const CATALOG = {
     ]
   },
   autosketch: {
-    name: 'Авторские эскизы',
+    name: 'SATKI',
     code: 'AM',
     desc: 'Эксклюзивные авторские работы Anette Mani. Искусство в каждом штрихе для неповторимых образов.',
     items: [
