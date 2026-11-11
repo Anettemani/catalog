@@ -3,10 +3,16 @@
    1. Мобильное меню (бургер)
    2. Кнопка «наверх»
    3. Автоподсчёт дизайнов на главной странице
+   Надписи берутся из i18n.js (AMLang) и обновляются при
+   переключении языка RU / EN.
    ============================================================ */
 
 (function () {
   'use strict';
+
+  function T(key, fallback) {
+    return (window.AMLang && AMLang.t(key, null, fallback)) || fallback;
+  }
 
   /* ---------- 1. Мобильное меню ---------- */
   var burger = document.getElementById('burger');
@@ -28,7 +34,7 @@
   /* ---------- 2. Кнопка «наверх» ---------- */
   var toTop = document.createElement('button');
   toTop.className = 'to-top';
-  toTop.setAttribute('aria-label', 'Наверх');
+  toTop.setAttribute('aria-label', T('back_top', 'Наверх'));
   toTop.innerHTML = '&#8593;';
   document.body.appendChild(toTop);
 
@@ -49,8 +55,6 @@
   });
 
   /* ---------- 3. Автоподсчёт дизайнов на главной ---------- */
-  if (typeof CATALOG === 'undefined') return;
-
   function plural(n, one, few, many) {
     var m10 = n % 10, m100 = n % 100;
     if (m10 === 1 && m100 !== 11) return one;
@@ -58,11 +62,28 @@
     return many;
   }
 
-  var nodes = document.querySelectorAll('[data-collection-count]');
-  Array.prototype.forEach.call(nodes, function (el) {
-    var col = CATALOG[el.getAttribute('data-collection-count')];
-    if (!col || !col.items) return;
-    var n = col.items.length;
-    el.textContent = n + ' ' + plural(n, 'дизайн', 'дизайна', 'дизайнов');
+  function countText(n) {
+    if (window.AMLang && AMLang.get() === 'en') {
+      return n + (n === 1 ? ' design' : ' designs');
+    }
+    return n + ' ' + plural(n, 'дизайн', 'дизайна', 'дизайнов');
+  }
+
+  function applyCounts() {
+    if (typeof CATALOG === 'undefined') return;
+    var nodes = document.querySelectorAll('[data-collection-count]');
+    Array.prototype.forEach.call(nodes, function (el) {
+      var col = CATALOG[el.getAttribute('data-collection-count')];
+      if (!col || !col.items) return;
+      el.textContent = countText(col.items.length);
+    });
+  }
+
+  applyCounts();
+
+  /* ---------- 4. Смена языка: обновляем динамические надписи ---------- */
+  document.addEventListener('am:lang', function () {
+    toTop.setAttribute('aria-label', T('back_top', 'Наверх'));
+    applyCounts();
   });
 })();

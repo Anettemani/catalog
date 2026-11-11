@@ -55,6 +55,9 @@ img { -webkit-user-drag: none; pointer-events: none; }
     font-family: Georgia, serif;
     font-size: 18pt;
   }
+  html.lang-en body::after {
+    content: "Materials protected by copyright © @anette_mani";
+  }
 }
 
 /* ---------- Верхняя лента ---------- */
@@ -122,6 +125,35 @@ img { -webkit-user-drag: none; pointer-events: none; }
 
 .main-nav a:hover { color: var(--pink-deep); }
 .main-nav a.active { color: var(--pink-deep); border-bottom-color: var(--pink-deep); }
+
+/* ---------- Переключатель языка RU / EN ---------- */
+.lang-switch {
+  display: flex;
+  border: 1px solid var(--line);
+  border-radius: 2px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.lang-btn {
+  appearance: none;
+  background: var(--bg);
+  border: none;
+  cursor: pointer;
+  font-family: var(--sans);
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  color: var(--muted);
+  padding: 7px 11px;
+  line-height: 1;
+  transition: color 0.25s, background 0.25s;
+}
+
+.lang-btn + .lang-btn { border-left: 1px solid var(--line); }
+.lang-btn:not(.active):hover { color: var(--pink-deep); }
+.lang-btn.active { color: #FFFFFF; background: var(--pink-deep); }
+.lang-btn:focus-visible { outline: 2px solid var(--pink-deep); outline-offset: 1px; }
 
 .burger {
   display: none;
@@ -847,6 +879,8 @@ img { -webkit-user-drag: none; pointer-events: none; }
 
 @media (max-width: 760px) {
   .burger { display: flex; }
+  .header-inner { gap: 14px; padding-left: 18px; padding-right: 18px; }
+  .lang-btn { padding: 6px 8px; font-size: 10px; }
   .main-nav {
     position: absolute;
     top: 100%;

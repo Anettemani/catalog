@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>XMQ | Anette Mani</title>
-<meta name="description" content="Смелые и современные решения для тех, кто не боится экспериментировать.">
+<meta name="description" data-tattr="content:desc_xmq" content="Смелые и современные решения для тех, кто не боится экспериментировать.">
 <meta name="theme-color" content="#FFFFFF">
 <link rel="canonical" href="https://anettemani.github.io/catalog/xmq.html">
 <!-- Open Graph: превью при отправке ссылки в Telegram, WhatsApp, VK -->
@@ -25,24 +25,28 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="assets/css/style.css?v=10">
+<link rel="stylesheet" href="assets/css/style.css?v=11">
 </head>
 <body data-collection="xmq">
-<div class="top-note">Авторские эскизы защищены &copy; @anette_mani</div>
+<div class="top-note" data-i18n="note_top">Авторские эскизы защищены &copy; @anette_mani</div>
 
 <header class="site-header">
   <div class="header-inner">
-    <a href="index.html" class="brand" aria-label="Anette Mani — на главную">
+    <a href="index.html" class="brand" data-tattr="aria-label:aria_home" aria-label="Anette Mani — на главную">
       <img src="assets/img/logo.png" alt="" class="brand-mark">
       <span class="brand-name">Anette&nbsp;Mani</span>
     </a>
-    <nav class="main-nav" aria-label="Основное меню">
-      <a href="index.html">Главная</a>
+    <nav class="main-nav" data-tattr="aria-label:aria_main_menu" aria-label="Основное меню">
+      <a href="index.html" data-i18n="nav_home">Главная</a>
       <a href="mynails.html">MY NAILS</a>
       <a href="autosketch.html">SATKI</a>
       <a href="xmq.html" class="active">XMQ</a>
     </nav>
-    <button class="burger" id="burger" aria-label="Открыть меню" aria-expanded="false">
+    <div class="lang-switch" role="group" aria-label="Язык / Language">
+      <button type="button" class="lang-btn" data-lang="ru" aria-pressed="false">RU</button>
+      <button type="button" class="lang-btn" data-lang="en" aria-pressed="false">EN</button>
+    </div>
+    <button class="burger" id="burger" data-tattr="aria-label:aria_open_menu" aria-label="Открыть меню" aria-expanded="false">
       <span></span><span></span><span></span>
     </button>
   </div>
@@ -50,33 +54,33 @@
 
 <main>
   <section class="catalog-head">
-    <p class="eyebrow">XMQ · Коллекция</p>
+    <p class="eyebrow" data-i18n="eyebrow_xmq">XMQ · Коллекция</p>
     <h1>XMQ</h1>
-    <p class="collection-desc">Смелые и современные решения для тех, кто не боится экспериментировать.</p>
+    <p class="collection-desc" data-i18n="desc_xmq">Смелые и современные решения для тех, кто не боится экспериментировать.</p>
 
     <div class="catalog-toolbar">
-      <input type="search" id="q" class="search" placeholder="Поиск по названию..." autocomplete="off">
-      <select id="sort" class="sort" aria-label="Сортировка">
-        <option value="new" selected>Новинки</option>
-        <option value="old">Ранее опубликованные</option>
+      <input type="search" id="q" class="search" data-tattr="placeholder:search_ph" placeholder="Поиск по названию..." autocomplete="off">
+      <select id="sort" class="sort" data-tattr="aria-label:sort_aria" aria-label="Сортировка">
+        <option value="new" selected data-i18n="sort_new">Новинки</option>
+        <option value="old" data-i18n="sort_old">Ранее опубликованные</option>
       </select>
     </div>
     <p class="count-note" id="count-note"></p>
   </section>
 
-  <section class="grid" id="grid" aria-label="Эскизы коллекции"></section>
-  <p class="empty" id="empty" hidden>Ничего не найдено. Попробуйте изменить запрос.</p>
+  <section class="grid" id="grid" data-tattr="aria-label:grid_aria" aria-label="Эскизы коллекции"></section>
+  <p class="empty" id="empty" data-i18n="empty" hidden>Ничего не найдено. Попробуйте изменить запрос.</p>
 </main>
 
 <footer class="site-footer">
   <div class="footer-inner">
     <div class="f-col">
       <p class="f-title">by @anette_mani</p>
-      <p class="f-text">Создаю цифровую эстетику для мастеров, которые ценят качество и уникальность. Ваши лучшие работы начинаются с моих эскизов.</p>
-      <p class="f-badges"><span>Уникальность</span><span>Сделано с любовью</span></p>
+      <p class="f-text" data-i18n="f_text">Создаю цифровую эстетику для мастеров, которые ценят качество и уникальность. Ваши лучшие работы начинаются с моих эскизов.</p>
+      <p class="f-badges"><span data-i18n="f_badge1">Уникальность</span><span data-i18n="f_badge2">Сделано с любовью</span></p>
     </div>
     <div class="f-col">
-      <p class="f-title">Коллекции</p>
+      <p class="f-title" data-i18n="f_collections">Коллекции</p>
       <nav class="f-links">
         <a href="autosketch.html">SATKI</a>
         <a href="mynails.html">MY NAILS</a>
@@ -84,34 +88,35 @@
       </nav>
     </div>
     <div class="f-col">
-      <p class="f-title">Связь с автором</p>
+      <p class="f-title" data-i18n="f_contact">Связь с автором</p>
       <nav class="f-links">
         <a href="https://t.me/anette_mani" target="_blank" rel="noopener">Telegram</a>
         <a href="mailto:ann19@mail.ru">ann19@mail.ru</a>
       </nav>
     </div>
   </div>
-  <p class="copyright">&copy; 2026 by @anette_mani. Все права защищены</p>
+  <p class="copyright" data-i18n="copyright">&copy; 2026 by @anette_mani. Все права защищены</p>
 </footer>
 
 <div class="lightbox" id="lightbox" hidden>
-  <button class="lb-close" id="lb-close" aria-label="Закрыть">&times;</button>
-  <button class="lb-nav lb-prev" id="lb-prev" aria-label="Предыдущий эскиз">&#8249;</button>
-  <button class="lb-nav lb-next" id="lb-next" aria-label="Следующий эскиз">&#8250;</button>
+  <button class="lb-close" id="lb-close" data-tattr="aria-label:aria_close" aria-label="Закрыть">&times;</button>
+  <button class="lb-nav lb-prev" id="lb-prev" data-tattr="aria-label:aria_prev" aria-label="Предыдущий эскиз">&#8249;</button>
+  <button class="lb-nav lb-next" id="lb-next" data-tattr="aria-label:aria_next" aria-label="Следующий эскиз">&#8250;</button>
   <div class="lb-zoom" id="lb-zoom"></div>
   <figure class="lb-body">
     <div class="lb-img-wrap"><div class="lb-img" id="lb-img"></div><div class="guard"></div></div>
     <figcaption>
       <p class="lb-title" id="lb-title"></p>
       <p class="lb-counter" id="lb-counter"></p>
-      <a class="btn btn-solid" id="lb-ali" href="#" target="_blank" rel="noopener">Найти на AliExpress</a>
+      <a class="btn btn-solid" id="lb-ali" href="#" target="_blank" rel="noopener" data-i18n="find_ali">Найти на AliExpress</a>
     </figcaption>
   </figure>
 </div>
 
 <script src="assets/js/data.js"></script>
+<script src="assets/js/i18n.js?v=1"></script>
 <script src="assets/js/protect.js"></script>
-<script src="assets/js/site.js"></script>
-<script src="assets/js/app.js?v=11"></script>
+<script src="assets/js/site.js?v=2"></script>
+<script src="assets/js/app.js?v=12"></script>
 </body>
 </html>

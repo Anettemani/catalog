@@ -10,6 +10,11 @@
   var colKey = body.getAttribute('data-collection');
   if (!colKey || typeof CATALOG === 'undefined' || !CATALOG[colKey]) return;
 
+  /* надписи из i18n.js (переключатель RU/EN в шапке) */
+  function T(key, vars, fallback) {
+    return (window.AMLang && AMLang.t(key, vars, fallback)) || fallback;
+  }
+
   var col = CATALOG[colKey];
   var visibleItems = []; // текущий отфильтрованный список (для лайтбокса)
   var grid = document.getElementById('grid');
@@ -33,12 +38,12 @@
     return (
       '<article class="item" data-num="' + item.n + '">' +
         '<div class="item-img" data-img="' + IMG_DIR + item.img + '" role="button" tabindex="0" ' +
-        'aria-label="' + esc(item.t) + ' — открыть крупно" title="Открыть крупно">' +
+        'aria-label="' + esc(item.t) + ' — ' + esc(T('view_large', null, 'открыть крупно')) + '" title="' + esc(T('view_large', null, 'Открыть крупно')) + '">' +
           '<div class="guard"></div>' +
         '</div>' +
         '<div class="item-body">' +
           '<h3 class="item-title">' + esc(item.t) + '</h3>' +
-          (item.ali ? '<a class="btn" href="' + esc(item.ali) + '" target="_blank" rel="noopener nofollow">Найти на AliExpress</a>' : '') +
+          (item.ali ? '<a class="btn" href="' + esc(item.ali) + '" target="_blank" rel="noopener nofollow">' + esc(T('find_ali', null, 'Найти на AliExpress')) + '</a>' : '') +
         '</div>' +
       '</article>'
     );
@@ -58,7 +63,8 @@
 
     grid.innerHTML = items.map(cardHTML).join('');
     emptyNote.hidden = items.length !== 0;
-    countNote.textContent = 'Показано ' + items.length + ' из ' + col.items.length + ' дизайнов';
+    countNote.textContent = T('shown_of', { a: items.length, b: col.items.length },
+      'Показано ' + items.length + ' из ' + col.items.length + ' дизайнов');
 
     visibleItems = items; // запоминаем для листания в лайтбоксе
     observeImages();
@@ -242,6 +248,11 @@
 
   render();
 
+  /* смена языка RU/EN — перерисовываем карточки и счётчик */
+  document.addEventListener('am:lang', function () {
+    render();
+  });
+
   /* ---------- Deep-link: ...mynails.html?design=021 — лайтбокс
      открывается сразу на указанном эскизе ---------- */
   var design0 = parseInt((location.search.match(/[?&]design=(\d+)/) || [])[1], 10);
@@ -344,6 +355,12 @@
   var wrap = document.querySelector('.lb-img-wrap');
   var lbImg = document.getElementById('lb-img');
   if (!lightbox || !wrap || !lbImg) return;
+
+  /* надписи из i18n.js (переключатель RU/EN в шапке) */
+  function T(key, vars, fallback) {
+    return (window.AMLang && AMLang.t(key, vars, fallback)) || fallback;
+  }
+
   var layer = document.getElementById('lb-zoom');
   if (!layer) { // страховка на случай старой разметки
     layer = document.createElement('div');
@@ -373,13 +390,22 @@
   // подсказка под кнопкой AliExpress
   var hint = document.createElement('p');
   hint.className = 'lb-hint';
-  var HINT_IDLE = TOUCH
-    ? 'Разведите пальцы или дважды коснитесь, чтобы приблизить'
-    : 'Нажмите на эскиз или покрутите колёсико мыши, чтобы приблизить';
-  var HINT_ZOOM = TOUCH
-    ? 'Ведите пальцем, чтобы осмотреть. Сведите пальцы или дважды коснитесь — уменьшить'
-    : 'Ведите мышью — лупа покажет детали. Нажмите ещё раз или крутите колёсико вниз, чтобы уменьшить';
-  hint.textContent = HINT_IDLE;
+
+  function hintText(zoomedNow) {
+    var key = zoomedNow
+      ? (TOUCH ? 'hint_zoom_touch' : 'hint_zoom_pc')
+      : (TOUCH ? 'hint_idle_touch' : 'hint_idle_pc');
+    var fb = zoomedNow
+      ? (TOUCH
+        ? 'Ведите пальцем, чтобы осмотреть. Сведите пальцы или дважды коснитесь — уменьшить'
+        : 'Ведите мышью — лупа покажет детали. Нажмите ещё раз или крутите колёсико вниз, чтобы уменьшить')
+      : (TOUCH
+        ? 'Разведите пальцы или дважды коснитесь, чтобы приблизить'
+        : 'Нажмите на эскиз или покрутите колёсико мыши, чтобы приблизить');
+    return T(key, null, fb);
+  }
+
+  hint.textContent = hintText(false);
   lightbox.querySelector('.lb-body').appendChild(hint);
 
   function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
@@ -389,7 +415,7 @@
       zoomed = true;
       lbImg.dataset.zoom = '1';
       wrap.classList.add('zoomed');
-      hint.textContent = HINT_ZOOM;
+      hint.textContent = hintText(true);
     } else if (!on && zoomed) {
       zoomed = false;
       scale = 1;
@@ -397,7 +423,7 @@
       wrap.classList.remove('zoomed');
       lbImg.style.backgroundSize = '';
       lbImg.style.backgroundPosition = '';
-      hint.textContent = HINT_IDLE;
+      hint.textContent = hintText(false);
     }
   }
 
@@ -730,6 +756,11 @@
   lightbox.addEventListener('click', onClick);
   lightbox.addEventListener('mousemove', onMouseMove);
   lightbox.addEventListener('mouseleave', loupeOff);
+
+  /* смена языка RU/EN — обновляем подсказку зума */
+  document.addEventListener('am:lang', function () {
+    hint.textContent = hintText(zoomed);
+  });
 
   /* колёсико мыши: плавный зум. На телефоне/планшете — полноэкранный слой
      (до 4×, с осмотром пальцем), на ПК — эскиз растёт за рамки бокса,

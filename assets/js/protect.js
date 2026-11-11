@@ -31,13 +31,17 @@
     }, 2200);
   }
 
-  var WARN = 'Эскизы защищены авторским правом © @anette_mani';
+  function warnText() {
+    return (window.AMLang && AMLang.t('protected_warn', null,
+      'Эскизы защищены авторским правом © @anette_mani')) ||
+      'Эскизы защищены авторским правом © @anette_mani';
+  }
 
   // 1. Контекстное меню — отключаем везде, кроме полей ввода
   document.addEventListener('contextmenu', function (e) {
     if (e.target.closest('input, textarea, select')) return;
     e.preventDefault();
-    showToast(WARN);
+    showToast(warnText());
   }, { capture: true });
 
   // 2. Перетаскивание любых элементов
@@ -54,7 +58,7 @@
   // Копирование заголовков эскизов — не даём массово тащить список
   document.addEventListener('copy', function (e) {
     if (e.target.closest('input, textarea, select')) return;
-    e.clipboardData.setData('text/plain', WARN);
+    e.clipboardData.setData('text/plain', warnText());
     e.preventDefault();
   });
 
@@ -75,7 +79,7 @@
     if (blocked) {
       e.preventDefault();
       e.stopPropagation();
-      showToast(WARN);
+      showToast(warnText());
     }
   }, { capture: true });
 
@@ -98,7 +102,12 @@
   var restoreTimer = null;
   var toastTimer = null;
   var armed = false;
-  var WARN = 'Эскизы защищены авторским правом © @anette_mani';
+
+  function warnText() {
+    return (window.AMLang && AMLang.t('protected_warn', null,
+      'Эскизы защищены авторским правом © @anette_mani')) ||
+      'Эскизы защищены авторским правом © @anette_mani';
+  }
 
   function warn() {
     var t = document.getElementById('protect-toast');
@@ -109,7 +118,7 @@
       t.setAttribute('role', 'status');
       document.body.appendChild(t);
     }
-    t.textContent = WARN;
+    t.textContent = warnText();
     t.style.zIndex = '100001';
     t.classList.add('show');
     clearTimeout(toastTimer);
